@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pharmacy Management System</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="node_modules/bootstrap/bootstrap.min.css">
+
+  <script>
+      if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/sw.js')
+              .then(reg => console.log('Service Worker Registered', reg))
+              .catch(err => console.log('Service Worker Registration Failed', err));
+      }
+  </script>
+    <style>
+      body{
+        background-color:rgb(238, 243, 248);
+      }
+        .search-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 300px;
+        }
+
+        .form-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-row input {
+            flex: 1;
+        }
+
+        .form-row button {
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+  </div>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4" style="color: blue; font-weight: bolder;">LADLA'S Pharmacy Management System</h1>
+        
+        <!-- Add Medicine Form -->
+        <div class="card mb-4">
+            <div class="card-header">Add New Medicine</div>
+            <div class="card-body">
+                <form id="medicineForm">
+                    <div class="form-row">
+                        <input type="text" class="form-control" id="medicineName" placeholder="Medicine Name" required>
+                        <input type="text" class="form-control" id="batchNumber" placeholder="Batch Number" required>
+                        <input type="date" class="form-control" id="expiryDate" placeholder="Expiry Date" required>
+                        <input type="number" class="form-control" id="price" placeholder="Price" required>
+                        <input type="number" class="form-control" id="stock" placeholder="Stock" required>
+                        <button type="submit" class="btn btn-primary">Add Medicine</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Medicine List -->
+        <div class="card mb-4">
+            <div class="card-header">Medicine List</div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Medicine Name</th>
+                            <th>Batch Number</th>
+                            <th>Expiry Date</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="medicineList">
+                        <!-- Medicine items will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <input type="text" class="form-control" id="searchBar" placeholder="Search for medicine...">
+    </div>
+
+
+
+
+    <script src="node_modules/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+
+        let medicines = [];
+
+        // Function to render medicines in the table
+        function renderMedicines(filteredMedicines) {
+            const list = document.getElementById('medicineList');
+            list.innerHTML = '';
+            filteredMedicines.forEach((medicine, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${medicine.name}</td>
+                    <td>${medicine.batchNumber}</td>
+                    <td>${medicine.expiryDate}</td>
+                    <td>${medicine.price}</td>
+                    <td>${medicine.stock}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="deleteMedicine(${index})">Delete</button>
+                    </td>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        // Event listener for the search bar
+        document.getElementById('searchBar').addEventListener('input', function() {
+            const searchValue = this.value.toLowerCase();
+            const filteredMedicines = medicines.filter(medicine => 
+                medicine.name.toLowerCase().includes(searchValue)
+            );
+            renderMedicines(filteredMedicines);
+        });
+
+        // Load medicines from localStorage
+        function loadMedicines() {
+            const storedMedicines = JSON.parse(localStorage.getItem('medicines'));
+            if (storedMedicines) {
+                medicines = storedMedicines;
+            }
+            renderMedicines(medicines);
+        }
+
+        // Function to delete a medicine
+        function deleteMedicine(index) {
+            medicines.splice(index, 1);
+            localStorage.setItem('medicines', JSON.stringify(medicines));
+            renderMedicines(medicines);
+        }
+
+        // Event listener for form submission
+        document.getElementById('medicineForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('medicineName').value;
+            const batchNumber = document.getElementById('batchNumber').value;
+            const expiryDate = document.getElementById('expiryDate').value;
+            const price = document.getElementById('price').value;
+            const stock = document.getElementById('stock').value;
+
+            const newMedicine = {
+                name,
+                batchNumber,
+                expiryDate,
+                price,
+                stock
+            };
+
+            medicines.push(newMedicine);
+            localStorage.setItem('medicines', JSON.stringify(medicines));
+            renderMedicines(medicines);
+
+            // Clear the form
+            document.getElementById('medicineForm').reset();
+        });
+
+        // Initial render
+        loadMedicines();
+    </script>
+</body>
+</html>
